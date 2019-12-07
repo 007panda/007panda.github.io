@@ -22,7 +22,7 @@
     <meta name="description" content="">
     <meta http-equiv="Cache-control" content="no-cache">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>007panda&#39;s Studio</title>
+    <title>使用burp+本地服务器+frida实现动态修改参数值 · 007panda&#39;s Studio</title>
     <style type="text/css">
     @font-face {
         font-family: 'Oswald-Regular';
@@ -217,7 +217,7 @@
                 <a href="/">007panda&#39;s Studio.</a>
             </div>
             <div class="post-title">
-                <a href="#" class="post-name"></a>
+                <a href="#" class="post-name">使用burp+本地服务器+frida实现动态修改参数值</a>
             </div>
     </div>
     
@@ -247,7 +247,7 @@ height:50vh;
         <h1 class="intro-title">
             <!-- 主页  -->
             
-            [Untitled Post]
+            使用burp+本地服务器+frida实现动态修改参数值
             <!-- 404 -->
             
         </h1>
@@ -263,6 +263,12 @@ height:50vh;
         
             <div class="post-intros">
                 <!-- 文章页标签  -->
+                
+                    <div class="post-intro-tags">
+    
+        <a class="post-tag" href="javascript:void(0);" data-tags="Android, frida, hook, burp">Android, frida, hook, burp</a>
+    
+</div>
                 
                 
                     <div class="post-intro-read">
@@ -395,15 +401,13 @@ height:50vh;
         <div class="container container-unloaded">
             <main class="main post-page">
     <article class="article-entry">
-        <p>##模拟发包实现在burp动态修改frida hook参数</p>
-<p>参考链接</p>
+        <h2 id="模拟发包实现在burp动态修改frida-hook参数"><a href="#模拟发包实现在burp动态修改frida-hook参数" class="headerlink" title="模拟发包实现在burp动态修改frida hook参数"></a>模拟发包实现在burp动态修改frida hook参数</h2><p>参考链接</p>
 <blockquote>
 <p><a href="https://www.freebuf.com/articles/web/125260.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/web/125260.html</a><br><a href="https://github.com/iddoeldor/frida-snippets#intercept-open" target="_blank" rel="noopener">https://github.com/iddoeldor/frida-snippets#intercept-open</a><br><a href="https://docs.python.org/3/library/http.server.html" target="_blank" rel="noopener">https://docs.python.org/3/library/http.server.html</a></p>
 </blockquote>
-<p>###00概述</p>
-<p>使用frida，我们可以用javascript代码以及API接口，来实现对 android native层的hook。一般是js代码与本地python脚本进行交互，实现对参数的动态修改。之前遇到一个项目，需要对native层加密函数进行hook,师傅说有方法可以实现在burp动态修改hook到的参数，并丢给了我几个连接，就去研究了一下,大概就是frida hook到的参数通过模拟发包发到本地搭建的服务器上，中间burp拦一下，正常修改就行了。我是在原博客的基础上进行修改，更多的是对原代码进行修改，以便能够使用，在修改的过程中也学到了一些东西，要感谢之前的作者的分享。</p>
+<h3 id="00概述"><a href="#00概述" class="headerlink" title="00概述"></a>00概述</h3><p>使用frida，我们可以用javascript代码以及API接口，来实现对 android native层的hook。一般是js代码与本地python脚本进行交互，实现对参数的动态修改。之前遇到一个项目，需要对native层加密函数进行hook,师傅说有方法可以实现在burp动态修改hook到的参数，并丢给了我几个连接，就去研究了一下,大概就是frida hook到的参数通过模拟发包发到本地搭建的服务器上，中间burp拦一下，正常修改就行了。我是在原博客的基础上进行修改，更多的是对原代码进行修改，以便能够使用，在修改的过程中也学到了一些东西，要感谢之前的作者的分享。</p>
 <p>用到的东西包括python3.6 + http.server库，frida_11.0.3 + ..\Python36\lib\site-packages\frida-10.0.3-py3.6-win-amd64\frida\tracer.py。主要工作就是写个服务器，把frida自带的脚本加个功能以及js注入脚本。</p>
-<p>###01具体实现以及思路<br>先上代码</p>
+<h3 id="01具体实现以及思路"><a href="#01具体实现以及思路" class="headerlink" title="01具体实现以及思路"></a>01具体实现以及思路</h3><p>先上代码</p>
 <p>xxx.js:</p>
 <pre><code>{
     onEnter: function (log, args, state) {
@@ -507,11 +511,10 @@ if __name__ == &quot;__main__&quot;:
 <p>先来看看firda/trace.py中相关源码。frida/trace.py中有一个_process_message函数，是用来处理与本地python之间的交互的，也是我们主要修改的对象。在trace_ex.py中，先将tracer.Tracer._process_message保存为tracer.Tracer.__process_message，就是为了在不同的情况下来判断是使用原函数，还是我们要发包的函数。我这种没有搞过源代码的菜狗，刚开始看这个操作有点懵，去看了看源码才明白了是干嘛的。</p>
 <p>server.py 比照python官方文档看的话就很好看懂了。</p>
 <p>需要在使用的时候具体修改的就是js代码了，这里的代码主要功能是拦截加密函数，把客户端加密前的数据发送出来，burp拦截，修改之后加密发送。解密的话，可以把解密函数hook到，把解密之后的结果直接发送到burp上来，我这里没有实现。</p>
-<p>###02具体使用</p>
-<p>我之前一直没有搞明白frida里 <code>frida-trace -U -i &quot;_..._encrypt....&quot; com.XXX.XXX</code> 这个命令到底是干嘛用的，还有生成的那个 <strong>headler</strong>里的那些js又是干啥的，直到我去看了一眼那些js代码——这打印日志，难不成就是执行命令之后刷屏的那个？行吧，明白了，终于找到了frida-trace的正确使用方法……</p>
+<h3 id="02具体使用"><a href="#02具体使用" class="headerlink" title="02具体使用"></a>02具体使用</h3><p>我之前一直没有搞明白frida里 <code>frida-trace -U -i &quot;_..._encrypt....&quot; com.XXX.XXX</code> 这个命令到底是干嘛用的，还有生成的那个 __headler__里的那些js又是干啥的，直到我去看了一眼那些js代码——这打印日志，难不成就是执行命令之后刷屏的那个？行吧，明白了，终于找到了frida-trace的正确使用方法……</p>
 <p>先用命令，然后把利用的js代码替换_handler__里那一行js代码，然后再执行命令就OK了。</p>
 <p>还有本地搭的服务器，在burp里先拦截本地的26000端口，然后转发到27000端口，就OK了。具体可以看原作者的截图。</p>
-<p>###03疑惑及解决<br>在修改之前的代码时，遇到了不少问题，记录一下。<br>首先就是版本问题——各种版本问题。python3.7没有低版本的frida，同时装上python3.6和3.7出现了一些冲突，就顺便搞了一波virtualenv。最神奇的是，pip安装frida总是会在解压的时候卡住，我就用easy_install 去安装了。结果明明明确版本是10.0.3，安装的时候，提示安装成功的也是10.0.3 ，我运行frida_server 的时候却总是报版本不对应错，我想了好久，重装了好几次，最后去看一了一下firda的版本，竟然是11.0.3的，就索性用11.0.3了。推测可能是应为python3.6 对应没有10.0.3 版本，或者easy_install 的问题吧。这个还不太清楚。</p>
+<h3 id="03疑惑及解决"><a href="#03疑惑及解决" class="headerlink" title="03疑惑及解决"></a>03疑惑及解决</h3><p>在修改之前的代码时，遇到了不少问题，记录一下。<br>首先就是版本问题——各种版本问题。python3.7没有低版本的frida，同时装上python3.6和3.7出现了一些冲突，就顺便搞了一波virtualenv。最神奇的是，pip安装frida总是会在解压的时候卡住，我就用easy_install 去安装了。结果明明明确版本是10.0.3，安装的时候，提示安装成功的也是10.0.3 ，我运行frida_server 的时候却总是报版本不对应错，我想了好久，重装了好几次，最后去看一了一下firda的版本，竟然是11.0.3的，就索性用11.0.3了。推测可能是应为python3.6 对应没有10.0.3 版本，或者easy_install 的问题吧。这个还不太清楚。</p>
 <p>还有就是看官方文档和读源代码，有种“我也是程序员了呢”的感觉。</p>
 
     </article>
@@ -520,8 +523,8 @@ if __name__ == &quot;__main__&quot;:
         <div class="license-wrapper">
             <p>原文作者：<a href="http://yoursite.com">007panda</a>
             </p><p>原文链接：<a href="http://yoursite.com/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/">http://yoursite.com/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/</a>
-            </p><p>发表日期：<a href="http://yoursite.com/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/">December 6th 2019, 7:54:27 pm</a>
-            </p><p>更新日期：<a href="http://yoursite.com/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/">December 6th 2019, 9:42:17 pm</a>
+            </p><p>发表日期：<a href="http://yoursite.com/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/">December 6th 2019, 5:46:18 pm</a>
+            </p><p>更新日期：<a href="http://yoursite.com/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/">December 7th 2019, 5:50:51 pm</a>
             </p><p>版权声明：本文采用<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">知识共享署名-非商业性使用 4.0 国际许可协议</a>进行许可</p>
         </div>
     
@@ -644,7 +647,7 @@ top:50vh;
         <div class="toc-catalog">
             <span class="iconfont-archer catalog-icon">&#xe613;</span><span>CATALOG</span>
         </div>
-        
+        <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#模拟发包实现在burp动态修改frida-hook参数"><span class="toc-number">1.</span> <span class="toc-text">模拟发包实现在burp动态修改frida hook参数</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#00概述"><span class="toc-number">1.1.</span> <span class="toc-text">00概述</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#01具体实现以及思路"><span class="toc-number">1.2.</span> <span class="toc-text">01具体实现以及思路</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#02具体使用"><span class="toc-number">1.3.</span> <span class="toc-text">02具体使用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#03疑惑及解决"><span class="toc-number">1.4.</span> <span class="toc-text">03疑惑及解决</span></a></li></ol></li></ol>
     </div>
     
     <div class="back-top iconfont-archer">&#xe639;</div>
@@ -686,13 +689,15 @@ top:50vh;
     
     
         <li class="archive-post-item">
-            <span class="archive-post-date">12/06</span><a class="archive-post-title" href="/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/">[Untitled Post]</a>
+            <span class="archive-post-date">12/06</span><a class="archive-post-title" href="/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/">使用burp+本地服务器+frida实现动态修改参数值</a>
         </li>
     
     </ul></div>
   </div>
         <div class="sidebar-panel-tags">
     <div class="sidebar-tags-name">
+    
+        <span class="sidebar-tag-name" data-tags="Android, frida, hook, burp"><span class="iconfont-archer">&#xe606;</span>Android, frida, hook, burp</span>
     
     </div>
     <div class="iconfont-archer sidebar-tags-empty">&#xe678;</div>
