@@ -1,0 +1,510 @@
+
+<!DOCTYPE html>
+<html lang="" class="loading">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title> - hello, @vJu8t</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate">
+    <meta name="keywords" content="TriDiamond Obsidian,"> 
+    <meta name="description" content="##模拟发包实现在burp动态修改frida hook参数
+参考链接
+
+https://www.freebuf.com/articles/web/125260.htmlhttps://github.,"> 
+    <meta name="author" content="Pan"> 
+    <link rel="alternative" href="atom.xml" title="hello, @vJu8t" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    <link href="https://fonts.loli.net/css?family=Roboto+Mono|Rubik&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_1429596_nzgqgvnmkjb.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/animate.css/3.7.2/animate.min.css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/css/share.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/codemirror/5.48.4/codemirror.min.css">
+    <link rel="stylesheet" href="//cdn.bootcss.com/codemirror/5.48.4/theme/dracula.css">
+    <link rel="stylesheet" href="/css/obsidian.css">
+    <link rel="stylesheet" href="/css/ball-atom.min.css">
+</head>
+</html>
+
+<body class="loading">
+    <div class="loader">
+        <div class="la-ball-atom la-2x">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+    <span id="config-title" style="display:none">hello, @vJu8t</span>
+    <div id="loader"></div>
+    <div id="single">
+    <div class="scrollbar gradient-bg-rev"></div>
+<div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <div class="navigation animated fadeIn fast delay-1s">
+        <img id="home-icon" class="icon-home" src="/img/favicon.png" alt="" data-url="http://yoursite.com">
+        <div id="play-icon" title="Play/Pause" class="iconfont icon-play"></div>
+        <h3 class="subtitle"></h3>
+        <div class="social">
+            <!--        <div class="like-icon">-->
+            <!--            <a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+            <!--        </div>-->
+            <div>
+                <div class="share">
+                    
+                        <a href="javascript:;" class="iconfont icon-share1"></a>
+                        <div class="share-component-cc" data-disabled="facebook,douban,linkedin,diandian,tencent,google"></div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+    <div class="section">
+        <div class="article-header-wrapper">
+    <div class="article-header">
+        <div class="article-cover animated fadeIn" style="
+            animation-delay: 600ms;
+            animation-duration: 1.2s;
+            background-image: 
+                radial-gradient(ellipse closest-side, rgba(0, 0, 0, 0.65), #100e17),
+                url(/img/cover.jpg);">
+        </div>
+        <div class="else">
+            <p class="animated fadeInDown">
+                
+                <a href="javascript:;"><b>「 </b>Article<b> 」</b></a>
+                
+                December 06, 2019
+            </p>
+            <h3 class="post-title animated fadeInDown"><a href="/2019/12/06/使用burp+本地服务器+frida实现动态修改参数值/" title="Untitled">Untitled</a>
+            </h3>
+            
+            <p class="post-count animated fadeInDown">
+                
+                <span>
+                    <b class="iconfont icon-text2"></b> <i>Words count</i>
+                    6.1k
+                </span>
+                
+                
+                <span>
+                    <b class="iconfont icon-timer__s"></b> <i>Reading time</i>
+                    6 mins.
+                </span>
+                
+                
+                
+                <span id="busuanzi_container_page_pv">
+                    <b class="iconfont icon-read"></b> <i>Read count</i>
+                    <span id="busuanzi_value_page_pv">0</span>
+                </span>
+                
+            </p>
+            
+            
+        </div>
+    </div>
+</div>
+
+<div class="screen-gradient-after">
+    <div class="screen-gradient-content">
+        <div class="screen-gradient-content-inside">
+            <div class="bold-underline-links screen-gradient-sponsor">
+                <p>
+                    <span class="animated fadeIn delay-1s"></span>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="article">
+    <div class="main">
+        <div class="content markdown animated fadeIn">
+            <p>##模拟发包实现在burp动态修改frida hook参数</p>
+<p>参考链接</p>
+<blockquote>
+<p><a href="https://www.freebuf.com/articles/web/125260.html" target="_blank" rel="noopener">https://www.freebuf.com/articles/web/125260.html</a><br><a href="https://github.com/iddoeldor/frida-snippets#intercept-open" target="_blank" rel="noopener">https://github.com/iddoeldor/frida-snippets#intercept-open</a><br><a href="https://docs.python.org/3/library/http.server.html" target="_blank" rel="noopener">https://docs.python.org/3/library/http.server.html</a></p>
+</blockquote>
+<p>###00概述</p>
+<p>使用frida，我们可以用javascript代码以及API接口，来实现对 android native层的hook。一般是js代码与本地python脚本进行交互，实现对参数的动态修改。之前遇到一个项目，需要对native层加密函数进行hook,师傅说有方法可以实现在burp动态修改hook到的参数，并丢给了我几个连接，就去研究了一下,大概就是frida hook到的参数通过模拟发包发到本地搭建的服务器上，中间burp拦一下，正常修改就行了。我是在原博客的基础上进行修改，更多的是对原代码进行修改，以便能够使用，在修改的过程中也学到了一些东西，要感谢之前的作者的分享。</p>
+<p>用到的东西包括python3.6 + http.server库，frida_11.0.3 + ..\Python36\lib\site-packages\frida-10.0.3-py3.6-win-amd64\frida\tracer.py。主要工作就是写个服务器，把frida自带的脚本加个功能以及js注入脚本。</p>
+<p>###01具体实现以及思路<br>先上代码</p>
+<p>xxx.js:</p>
+<pre><code>{
+    onEnter: function (log, args, state) {
+    log(&quot;read(&quot; + &quot;fd=&quot; + args[0] + &quot;, buf=&quot; + args[1]+ &quot;, count=&quot; + args[2] + &quot;)&quot;);
+    state.buf = args[1]
+    },
+
+    //将加密前的数据拦截发送给tracer_ex，接收从tracer_ex返回的数据
+    onLeave: function (log, retval, state) {
+        send({from: &apos;/http&apos;, payload: Memory.readUtf8String(state.buf)})
+        var op = recv( function(value) { // callback function
+            log(&quot;Forwarding fixed content: &quot; + value)
+            Memory.writeUtf8String(state.buf, value)
+        });
+        op.wait();
+    }
+}
+</code></pre><p>tracer_ex.py</p>
+<pre><code>from frida import tracer
+import requests
+
+BURP_HOST = &quot;localhost&quot;
+BURP_PORT = 26080
+
+
+def frida_process_message(self, message, data, ui):
+    handled = False
+
+    # 如果消息&apos;type&apos;是input,即是修改过的内容
+    if message[&apos;type&apos;] == &apos;input&apos;:
+        handled = True
+
+    # 默认将未修改过的消息进行处理    
+    # 接收tracer脚本hook的消息内容，生成请求，发送给server，并将返回的内容返回给tracer脚本
+    elif message[&apos;type&apos;] == &apos;send&apos;:
+        stanza = message[&apos;payload&apos;]
+
+        if stanza[&apos;from&apos;] == &apos;/http&apos;:
+            req = requests.request(&apos;FRIDA&apos;, &apos;http://%s:%d/&apos; % (BURP_HOST, BURP_PORT), headers={&apos;content-type&apos;:&apos;text/plain&apos;}, data=stanza[&apos;payload&apos;].encode(&apos;utf-8&apos;))#
+            # print(req.content)#.decode(&apos;utf-8&apos;)
+            # 修改以下代码，
+            # self._script.post({ &apos;type&apos;: &apos;input&apos;, &apos;payload&apos; : req.content})
+            self._script.post(req.content.decode(&apos;utf-8&apos;))#
+            handled = True
+
+    if not handled:
+        self.__process_message(message, data, ui)
+
+#将原trace._process_message保存在__process_message中，frida_process_message判断时，如果是
+tracer.Tracer.__process_message = tracer.Tracer._process_message
+tracer.Tracer._process_message = frida_process_message
+
+if __name__ == &apos;__main__&apos;:
+    print(&quot;[x] To intercept in Burp, set up an invisible proxy listening on port %d, forwarding to the echo server.&quot; % BURP_PORT)
+    tracer.main()
+</code></pre><p>server.py</p>
+<pre><code># from BaseHTTPHandler import HTTPServer,BaseHTTPRequestHandler
+from optparse import OptionParser
+from http.server import HTTPServer,BaseHTTPRequestHandler
+
+
+ECHO_PORT = 27080
+
+# 接收发送的请求，以便在burp上进行拦截进行动态修改，再将修改后的内容返回
+class RequestHandler(BaseHTTPRequestHandler):
+
+    def do_FRIDA(self):
+        request_path = self.path
+
+        request_headers = self.headers
+
+        # 此处getheaders()方法不存在，查找后发现现版本对应函数为get(name, failobj=None),而且参数应换为 “Content-Length”
+        # content_length = request_headers.getheaders(&apos;content-length&apos;)
+
+        content_length = request_headers.get(&apos;Content-Length&apos;)
+        print(content_length)
+
+        # 接着将[0]去除
+        # length = int(content_length[0]) if content_length else 0
+        length = int(content_length) if content_length else 0
+        self.send_response(200)
+        self.end_headers()
+
+        self.wfile.write(self.rfile.read(length))
+
+#这个地方，我改成了python官方的写法，加个传参的过程就感觉很舒服。
+# def main():
+#     print(&apos;Listening on localhost:%d&apos; % ECHO_PORT)
+#     server = HTTPServer((&apos;&apos;, ECHO_PORT), RequestHandler)
+#     server.serve_forever()
+
+def main(server_class=HTTPServer, handler_class=RequestHandler):
+    server_address = (&apos;127.0.0.1&apos;, ECHO_PORT)
+    httpd = server_class(server_address, handler_class)
+    httpd.serve_forever()
+
+if __name__ == &quot;__main__&quot;:
+    print(&quot;[x] Starting echo server on port %d&quot; % ECHO_PORT)
+    main()
+</code></pre><p>整体思路应该就是对frida/trace.py进行的拓展，加了一个发送http请求的功能，将frida hook函数的传入参数，通过http请求发送到本地搭建的服务器上，经由burp拦截即可进行修改。其中关键点事要进行判断，如果是参数还没修改的消息，就用拓展的功能发送消息传递参数，如果是正常的与本地python进行交互的消息，就用原来的处理函数进行。</p>
+<p>先来看看firda/trace.py中相关源码。frida/trace.py中有一个_process_message函数，是用来处理与本地python之间的交互的，也是我们主要修改的对象。在trace_ex.py中，先将tracer.Tracer._process_message保存为tracer.Tracer.__process_message，就是为了在不同的情况下来判断是使用原函数，还是我们要发包的函数。我这种没有搞过源代码的菜狗，刚开始看这个操作有点懵，去看了看源码才明白了是干嘛的。</p>
+<p>server.py 比照python官方文档看的话就很好看懂了。</p>
+<p>需要在使用的时候具体修改的就是js代码了，这里的代码主要功能是拦截加密函数，把客户端加密前的数据发送出来，burp拦截，修改之后加密发送。解密的话，可以把解密函数hook到，把解密之后的结果直接发送到burp上来，我这里没有实现。</p>
+<p>###02具体使用</p>
+<p>我之前一直没有搞明白frida里 <code>frida-trace -U -i &quot;_..._encrypt....&quot; com.XXX.XXX</code> 这个命令到底是干嘛用的，还有生成的那个 <strong>headler</strong>里的那些js又是干啥的，直到我去看了一眼那些js代码——这打印日志，难不成就是执行命令之后刷屏的那个？行吧，明白了，终于找到了frida-trace的正确使用方法……</p>
+<p>先用命令，然后把利用的js代码替换_handler__里那一行js代码，然后再执行命令就OK了。</p>
+<p>还有本地搭的服务器，在burp里先拦截本地的26000端口，然后转发到27000端口，就OK了。具体可以看原作者的截图。</p>
+<p>###03疑惑及解决<br>在修改之前的代码时，遇到了不少问题，记录一下。<br>首先就是版本问题——各种版本问题。python3.7没有低版本的frida，同时装上python3.6和3.7出现了一些冲突，就顺便搞了一波virtualenv。最神奇的是，pip安装frida总是会在解压的时候卡住，我就用easy_install 去安装了。结果明明明确版本是10.0.3，安装的时候，提示安装成功的也是10.0.3 ，我运行frida_server 的时候却总是报版本不对应错，我想了好久，重装了好几次，最后去看一了一下firda的版本，竟然是11.0.3的，就索性用11.0.3了。推测可能是应为python3.6 对应没有10.0.3 版本，或者easy_install 的问题吧。这个还不太清楚。</p>
+<p>还有就是看官方文档和读源代码，有种“我也是程序员了呢”的感觉。</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+            <ul id="audio-list" style="display:none">
+                
+                
+                <li title="0" data-url="/statics/chengdu.mp3"></li>
+                
+                    
+            </ul>
+            
+            
+            
+    <div id="gitalk-container" class="comment link" data-ae="true" data-ci="ec894e2b66f752e8b7fb" data-cs="3ccc2e92bb350688fe2c2dc2930189b62622bfb1" data-r="blog-comments" data-o="TriDiamond" data-a="TriDiamond" data-d="">Comments</div>
+
+
+            
+            
+        </div>
+        <div class="sidebar">
+            <div class="box animated fadeInRight">
+                <div class="subbox">
+                    <img src="https://res.cloudinary.com/tridiamond/image/upload/v1573019751/TriDiamond_logo_ui_xeublz.jpg" height="300" width="300">
+                    <p>Pan</p>
+                    <span>Think like an artist, develop like an artisan</span>
+                    <dl>
+                        <dd><a href="https://github.com/TriDiamond" target="_blank"><span class=" iconfont icon-github"></span></a></dd>
+                        <dd><a href="https://twitter.com/TriDiamond6" target="_blank"><span class=" iconfont icon-twitter"></span></a></dd>
+                        <dd><a href="https://stackoverflow.com/users/7602324/tridiamond?tab=profile" target="_blank"><span class=" iconfont icon-stack-overflow"></span></a></dd>
+                    </dl>
+                </div>
+                <ul>
+                    <li><a href="/">1 <p>Articles</p></a></li>
+                    <li><a href="/categories">0 <p>Categories</p></a></li>
+                    <li><a href="/tags">0 <p>Tags</p></a></li>
+                </ul>
+            </div>
+            
+            
+            
+            
+        </div>
+    </div>
+</div>
+
+    </div>
+</div>
+    <div id="back-to-top" class="animated fadeIn faster">
+        <div class="flow"></div>
+        <span class="percentage animated fadeIn faster">0%</span>
+        <span class="iconfont icon-top02 animated fadeIn faster"></span>
+    </div>
+</body>
+<footer>
+    <p class="copyright" id="copyright">
+        &copy; 2019
+        <span class="gradient-text">
+            Pan
+        </span>.
+        Powered by <a href="http://hexo.io/" title="Hexo" target="_blank" rel="noopener">Hexo</a>
+        Theme
+        <span class="gradient-text">
+            <a href="https://github.com/TriDiamond/hexo-theme-obsidian" title="Obsidian" target="_blank" rel="noopener">Obsidian</a>
+        </span>
+        <small><a href="https://github.com/TriDiamond/hexo-theme-obsidian/blob/master/CHANGELOG.md" title="v1.4.3" target="_blank" rel="noopener">v1.4.3</a></small>
+    </p>
+</footer>
+
+<script type="text/javascript" src="https://cdn.bootcss.com/mathjax/2.7.6/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<script>
+  MathJax.Hub.Config({
+    "HTML-CSS": {
+      preferredFont: "TeX",
+      availableFonts: ["STIX", "TeX"],
+      linebreaks: {
+        automatic: true
+      },
+      EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+      inlineMath: [
+        ["$", "$"],
+        ["\\(", "\\)"]
+      ],
+      processEscapes: true,
+      ignoreClass: "tex2jax_ignore|dno",
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+      noUndefined: {
+        attributes: {
+          mathcolor: "red",
+          mathbackground: "#FFEEEE",
+          mathsize: "90%"
+        }
+      },
+      Macros: {
+        href: "{}"
+      }
+    },
+    messageStyle: "none"
+  });
+</script>
+<script>
+  function initialMathJax() {
+    MathJax.Hub.Queue(function () {
+      var all = MathJax.Hub.getAllJax(),
+        i;
+      // console.log(all);
+      for (i = 0; i < all.length; i += 1) {
+        console.log(all[i].SourceElement().parentNode)
+        all[i].SourceElement().parentNode.className += ' has-jax';
+      }
+    });
+  }
+
+  function reprocessMathJax() {
+    if (typeof MathJax !== 'undefined') {
+      MathJax.Hub.Queue(["Typeset", MathJax.Hub]);
+    }
+  }
+</script>
+
+
+
+    <link rel="stylesheet" href="//cdn.bootcss.com/gitalk/1.5.0/gitalk.min.css">
+    <script src="//cdn.bootcss.com/gitalk/1.5.0/gitalk.min.js"></script>
+
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/obsidian.js"></script>
+<script src="/js/jquery.truncate.js"></script>
+<script src="/js/search.js"></script>
+<script src="//cdn.bootcss.com/typed.js/2.0.10/typed.min.js"></script>
+<script src="//cdn.bootcss.com/blueimp-md5/2.12.0/js/md5.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/social-share.js/1.0.16/js/social-share.min.js"></script>
+
+<script src="https://cdn.bootcss.com/codemirror/5.48.4/codemirror.min.js"></script>
+
+    <script src="//cdn.bootcss.com/codemirror/5.48.4/mode/javascript/javascript.min.js"></script>
+
+    <script src="//cdn.bootcss.com/codemirror/5.48.4/mode/css/css.min.js"></script>
+
+    <script src="//cdn.bootcss.com/codemirror/5.48.4/mode/xml/xml.min.js"></script>
+
+    <script src="//cdn.bootcss.com/codemirror/5.48.4/mode/htmlmixed/htmlmixed.min.js"></script>
+
+    <script src="//cdn.bootcss.com/codemirror/5.48.4/mode/clike/clike.min.js"></script>
+
+    <script src="//cdn.bootcss.com/codemirror/5.48.4/mode/php/php.min.js"></script>
+
+    <script src="//cdn.bootcss.com/codemirror/5.48.4/mode/shell/shell.min.js"></script>
+
+    <script src="//cdn.bootcss.com/codemirror/5.48.4/mode/python/python.min.js"></script>
+
+
+
+    <script src="/js/busuanzi.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            if ($('span[id^="busuanzi_"]').length) {
+                initialBusuanzi();
+            }
+        });
+    </script>
+
+
+<link rel="stylesheet" href="//cdn.bootcss.com/photoswipe/4.1.3/photoswipe.min.css">
+<link rel="stylesheet" href="//cdn.bootcss.com/photoswipe/4.1.3/default-skin/default-skin.min.css">
+<script src="//cdn.bootcss.com/photoswipe/4.1.3/photoswipe.min.js"></script>
+<script src="//cdn.bootcss.com/photoswipe/4.1.3/photoswipe-ui-default.min.js"></script>
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="//www.googletagmanager.com/gtag/js?id=UA-149874671-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-149874671-1');
+    </script>
+
+
+
+
+
+<script>
+    function initialTyped () {
+        var typedTextEl = $('.typed-text');
+        if (typedTextEl && typedTextEl.length > 0) {
+            var typed = new Typed('.typed-text', {
+                strings: ["Think like an artist, develop like an artisan", "艺术家思维去思考问题，工匠创造精神去开发"],
+                typeSpeed: 90,
+                loop: true,
+                loopCount: Infinity,
+                backSpeed: 20,
+            });
+        }
+    }
+
+    if ($('.article-header') && $('.article-header').length) {
+        $(document).ready(function () {
+            initialTyped();
+        });
+    }
+</script>
+
+
+
+
+</html>
